@@ -24,12 +24,12 @@ const DOT_POSITIONS: Record<number, [number, number][]> = {
 };
 
 const COMBO_INFO: Record<ComboType, { label: string; color: string; emoji: string }> = {
-  "snake-eyes": { label: "Snake Eyes! Buy a round!", color: "text-red-400", emoji: "🍺" },
-  "doubles":    { label: "Doubles! Bonus roll!",      color: "text-primary",   emoji: "🎰" },
+  "snake-eyes": { label: "Snake Eyes! Buy a round!", color: "text-red-400",     emoji: "🍺" },
+  "doubles":    { label: "Doubles! Bonus roll!",      color: "text-primary",     emoji: "🎰" },
   "lucky-7":    { label: "Lucky 7! +7 bonus!",        color: "text-emerald-400", emoji: "🍀" },
-  "yo-leven":   { label: "Yo-Leven! +11 bonus!",      color: "text-primary",   emoji: "⚡" },
-  "boxcars":    { label: "Boxcars! Score doubled!",    color: "text-yellow-300", emoji: "🎲" },
-  "normal":     { label: "",                           color: "text-foreground", emoji: "" },
+  "yo-leven":   { label: "Yo-Leven! +11 bonus!",      color: "text-primary",     emoji: "⚡" },
+  "boxcars":    { label: "Boxcars! Score doubled!",    color: "text-yellow-300",  emoji: "🎲" },
+  "normal":     { label: "",                           color: "text-foreground",  emoji: "" },
 };
 
 function getCombo(d1: number, d2: number): ComboType {
@@ -55,8 +55,10 @@ function Die({ value, rolling, delay = 0 }: { value: number; rolling: boolean; d
   const dots = DOT_POSITIONS[value] ?? [];
   return (
     <div
-      className="relative w-28 h-28 rounded-2xl bg-[#f5edcf] shadow-[inset_0_2px_6px_rgba(0,0,0,0.2),0_8px_28px_rgba(0,0,0,0.45)]"
+      className="relative rounded-2xl bg-[#f5edcf] shadow-[inset_0_2px_6px_rgba(0,0,0,0.2),0_8px_28px_rgba(0,0,0,0.45)]"
       style={{
+        width: "clamp(88px, 22vw, 112px)",
+        height: "clamp(88px, 22vw, 112px)",
         transform: rolling ? `scale(0.92) rotate(${delay > 0 ? -14 : 14}deg)` : "scale(1) rotate(0deg)",
         transition: rolling
           ? `transform 0.07s ease-in-out ${delay}ms`
@@ -66,8 +68,14 @@ function Die({ value, rolling, delay = 0 }: { value: number; rolling: boolean; d
       {dots.map(([cx, cy], i) => (
         <div
           key={i}
-          className="absolute w-[14px] h-[14px] rounded-full bg-[#1c1208]"
-          style={{ left: `${cx}%`, top: `${cy}%`, transform: "translate(-50%, -50%)" }}
+          className="absolute rounded-full bg-[#1c1208]"
+          style={{
+            width: "clamp(10px, 3vw, 14px)",
+            height: "clamp(10px, 3vw, 14px)",
+            left: `${cx}%`,
+            top: `${cy}%`,
+            transform: "translate(-50%, -50%)",
+          }}
         />
       ))}
     </div>
@@ -75,14 +83,12 @@ function Die({ value, rolling, delay = 0 }: { value: number; rolling: boolean; d
 }
 
 function ScoreBar({ score }: { score: number }) {
-  const maxDisplay = 120;
-  const pct = Math.max(0, Math.min(100, (score / maxDisplay) * 100));
-  const isNegative = score < 0;
+  const pct = Math.max(0, Math.min(100, (score / 120) * 100));
   return (
-    <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
+    <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
       <div
-        className={`h-full rounded-full transition-all duration-500 ${isNegative ? "bg-red-400" : "bg-primary"}`}
-        style={{ width: `${isNegative ? 10 : pct}%` }}
+        className={`h-full rounded-full transition-all duration-500 ${score < 0 ? "bg-red-400" : "bg-primary"}`}
+        style={{ width: `${score < 0 ? 8 : pct}%` }}
       />
     </div>
   );
@@ -91,23 +97,23 @@ function ScoreBar({ score }: { score: number }) {
 function RulesPanel() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-border bg-card text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-border bg-card text-sm font-mono text-muted-foreground active:opacity-70 transition-opacity"
       >
         <span>How to play</span>
         <span className="text-xs">{open ? "▲" : "▼"}</span>
       </button>
       {open && (
-        <div className="mt-1 px-4 py-3 rounded-xl border border-border bg-card text-xs font-mono space-y-1.5 text-muted-foreground">
-          <p className="text-foreground font-semibold mb-2">Last Call — Bar Dice Rules</p>
-          <p><span className="text-red-400">🍺 Snake Eyes (1+1)</span> — Lose 10 pts. You're buying!</p>
-          <p><span className="text-primary">🎰 Doubles</span> — Any other doubles earn a free bonus roll.</p>
-          <p><span className="text-emerald-400">🍀 Lucky 7</span> — Sum + 7 bonus points.</p>
-          <p><span className="text-primary">⚡ Yo-Leven (11)</span> — Sum + 11 bonus points.</p>
-          <p><span className="text-yellow-300">🎲 Boxcars (12)</span> — Your score is doubled for that roll.</p>
-          <p className="pt-1 border-t border-border text-muted-foreground">Play {TOTAL_ROUNDS} rounds. Highest score wins the tab.</p>
+        <div className="mt-1 px-4 py-3 rounded-xl border border-border bg-card text-xs font-mono space-y-2 text-muted-foreground">
+          <p className="text-foreground font-semibold">Last Call — Bar Dice</p>
+          <p><span className="text-red-400">🍺 Snake Eyes (1+1)</span> — Lose 10 pts</p>
+          <p><span className="text-primary">🎰 Doubles</span> — Free bonus roll</p>
+          <p><span className="text-emerald-400">🍀 Lucky 7</span> — Sum + 7 pts</p>
+          <p><span className="text-primary">⚡ Yo-Leven (11)</span> — Sum + 11 pts</p>
+          <p><span className="text-yellow-300">🎲 Boxcars (12)</span> — Score × 2</p>
+          <p className="pt-1.5 border-t border-border">{TOTAL_ROUNDS} rounds. Highest score wins the tab.</p>
         </div>
       )}
     </div>
@@ -122,7 +128,6 @@ export default function App() {
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(0);
   const [log, setLog] = useState<LogEntry[]>([]);
-  const [idCounter, setIdCounter] = useState(0);
   const [comboFlash, setComboFlash] = useState<ComboType | null>(null);
   const [pendingBonusRoll, setPendingBonusRoll] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
@@ -137,11 +142,10 @@ export default function App() {
   function animateRoll(onDone: (d1: number, d2: number) => void) {
     setGameState("rolling");
     let ticks = 0;
-    const total = 12;
     const iv = setInterval(() => {
       setDice([Math.ceil(Math.random() * 6), Math.ceil(Math.random() * 6)]);
       ticks++;
-      if (ticks >= total) {
+      if (ticks >= 12) {
         clearInterval(iv);
         const d1 = Math.ceil(Math.random() * 6);
         const d2 = Math.ceil(Math.random() * 6);
@@ -156,18 +160,12 @@ export default function App() {
     const pts = calcPoints(d1, d2, combo);
     const newScore = currentScore + pts;
     const newRound = isBonusRoll ? currentRound : currentRound + 1;
-    const entry: LogEntry = {
-      id: idRef.current++,
-      dice: [d1, d2],
-      baseSum: d1 + d2,
-      pointsEarned: pts,
-      combo,
-      runningScore: newScore,
-      isBonusRoll,
-    };
     setScore(newScore);
     setRound(newRound);
-    setLog((prev) => [...prev, entry]);
+    setLog((prev) => [
+      ...prev,
+      { id: idRef.current++, dice: [d1, d2], baseSum: d1 + d2, pointsEarned: pts, combo, runningScore: newScore, isBonusRoll },
+    ]);
     setComboFlash(combo);
     setTimeout(() => setComboFlash(null), 1600);
 
@@ -179,112 +177,156 @@ export default function App() {
     } else {
       setGameState("playing");
     }
-
-    return { newScore, newRound };
   }
 
   function handleRoll() {
     if (gameState === "rolling") return;
     const isBonusRoll = pendingBonusRoll;
     if (isBonusRoll) setPendingBonusRoll(false);
-    animateRoll((d1, d2) => {
-      commitRoll(d1, d2, isBonusRoll, score, round);
-    });
+    animateRoll((d1, d2) => commitRoll(d1, d2, isBonusRoll, score, round));
   }
 
   function startGame() {
-    setScore(0);
-    setRound(0);
-    setLog([]);
-    setDice([1, 1]);
-    setComboFlash(null);
-    setPendingBonusRoll(false);
+    setScore(0); setRound(0); setLog([]); setDice([1, 1]);
+    setComboFlash(null); setPendingBonusRoll(false);
     setGameState("playing");
   }
 
   function resetGame() {
-    setGameState("idle");
-    setScore(0);
-    setRound(0);
-    setLog([]);
-    setDice([1, 1]);
-    setComboFlash(null);
-    setPendingBonusRoll(false);
+    setGameState("idle"); setScore(0); setRound(0); setLog([]); setDice([1, 1]);
+    setComboFlash(null); setPendingBonusRoll(false);
   }
 
   const isRolling = gameState === "rolling";
-  const roundsLeft = TOTAL_ROUNDS - round;
   const flashInfo = comboFlash ? COMBO_INFO[comboFlash] : null;
+  const avgPts = log.length > 0 ? (log.reduce((s, e) => s + e.pointsEarned, 0) / log.length).toFixed(1) : null;
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center gap-6 px-4 py-12"
+      className="min-h-screen w-full flex flex-col"
       style={{ fontFamily: "'Outfit', sans-serif" }}
     >
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-5xl font-bold tracking-tight text-foreground">Last Call</h1>
-        <p className="text-muted-foreground text-sm mt-1 font-mono">A bar dice game · {TOTAL_ROUNDS} rounds</p>
-      </div>
+      {/* Fixed header */}
+      <header className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground leading-none">Last Call</h1>
+          <p className="text-[11px] font-mono text-muted-foreground mt-0.5">Bar Dice · {TOTAL_ROUNDS} rounds</p>
+        </div>
+        {gameState !== "idle" && (
+          <div className="text-right">
+            <p className={`text-2xl font-bold tabular-nums leading-none ${score < 0 ? "text-red-400" : "text-primary"}`}>
+              {score}
+            </p>
+            <p className="text-[11px] font-mono text-muted-foreground mt-0.5">
+              {gameState !== "done"
+                ? pendingBonusRoll ? "Bonus!" : `Rd ${round + 1}/${TOTAL_ROUNDS}`
+                : "Final"}
+            </p>
+          </div>
+        )}
+      </header>
 
-      {/* Rules */}
-      <RulesPanel />
+      {/* Scrollable body */}
+      <main className="flex-1 flex flex-col items-center gap-4 px-4 pt-5 pb-36">
+        {/* Score bar */}
+        {gameState !== "idle" && (
+          <div className="w-full">
+            <ScoreBar score={score} />
+          </div>
+        )}
 
-      {/* Score / rounds */}
-      {gameState !== "idle" && (
-        <div className="w-full max-w-sm">
-          <div className="flex justify-between items-end mb-2">
-            <div>
-              <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Score</p>
-              <p className={`text-4xl font-bold tabular-nums transition-colors ${score < 0 ? "text-red-400" : "text-primary"}`}>
-                {score}
+        {/* Rules */}
+        <RulesPanel />
+
+        {/* Dice */}
+        <div className="flex flex-col items-center gap-3 py-2">
+          <div className="flex gap-5 items-center">
+            <Die value={dice[0]} rolling={isRolling} delay={0} />
+            <span className="text-muted-foreground font-bold text-xl select-none">+</span>
+            <Die value={dice[1]} rolling={isRolling} delay={30} />
+          </div>
+
+          {/* Combo flash */}
+          <div className="h-6 flex items-center justify-center">
+            {flashInfo?.label ? (
+              <p className={`text-sm font-semibold font-mono ${flashInfo.color} animate-pulse`}>
+                {flashInfo.emoji} {flashInfo.label}
               </p>
-            </div>
-            <div className="text-right">
-              {gameState !== "done" ? (
-                <>
-                  <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                    {pendingBonusRoll ? "Bonus Roll!" : `Round ${round + 1} of ${TOTAL_ROUNDS}`}
-                  </p>
-                  <p className="text-sm font-mono text-muted-foreground">
-                    {pendingBonusRoll ? "Doubles reward" : `${roundsLeft} left`}
-                  </p>
-                </>
-              ) : (
-                <p className="text-sm font-mono text-primary">Game over</p>
+            ) : null}
+          </div>
+        </div>
+
+        {/* End screen */}
+        {gameState === "done" && (
+          <div className="w-full text-center px-4 py-5 rounded-2xl border border-border bg-card">
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-1">Final Score</p>
+            <p className={`text-6xl font-bold tabular-nums ${score < 0 ? "text-red-400" : "text-primary"}`}>{score}</p>
+            <p className="text-sm text-muted-foreground mt-2 font-mono">
+              {score >= 100 ? "🏆 Tab champion!" :
+               score >= 60  ? "🍻 Solid game!" :
+               score >= 30  ? "😅 Not bad..." :
+               score >= 0   ? "😬 Better luck next time" :
+                              "🍺 You're buying the whole bar!"}
+            </p>
+          </div>
+        )}
+
+        {/* Log */}
+        {log.length > 0 && (
+          <div className="w-full flex flex-col gap-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">
+                Roll History
+              </span>
+              {avgPts && (
+                <span className="text-[11px] font-mono text-muted-foreground">
+                  Avg {avgPts} pts/roll
+                </span>
               )}
             </div>
+            <div
+              ref={logRef}
+              className="rounded-xl border border-border bg-card overflow-y-auto"
+              style={{ maxHeight: "240px", scrollbarWidth: "none" }}
+            >
+              <div className="divide-y divide-border">
+                {[...log].reverse().map((entry, i) => {
+                  const info = COMBO_INFO[entry.combo];
+                  return (
+                    <div
+                      key={entry.id}
+                      className="flex items-center justify-between px-3 py-2.5 text-xs font-mono"
+                      style={{ opacity: Math.max(0.45, 1 - i * 0.07) }}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        {entry.isBonusRoll && (
+                          <span className="text-primary text-[9px] border border-primary/40 rounded px-1 py-0.5 leading-none">BONUS</span>
+                        )}
+                        <span className="text-foreground">[{entry.dice[0]}][{entry.dice[1]}]={entry.baseSum}</span>
+                        {info.emoji && <span>{info.emoji}</span>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={entry.pointsEarned < 0 ? "text-red-400" : "text-primary"}>
+                          {entry.pointsEarned >= 0 ? "+" : ""}{entry.pointsEarned}
+                        </span>
+                        <span className="text-muted-foreground w-8 text-right">{entry.runningScore}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-          <ScoreBar score={score} />
-        </div>
-      )}
+        )}
+      </main>
 
-      {/* Dice area */}
-      <div className="flex flex-col items-center gap-5">
-        <div className="flex gap-6 items-center">
-          <Die value={dice[0]} rolling={isRolling} delay={0} />
-          <div className="text-muted-foreground font-bold text-2xl select-none">+</div>
-          <Die value={dice[1]} rolling={isRolling} delay={30} />
-        </div>
-
-        {/* Combo flash */}
-        <div className="h-7 flex items-center">
-          {flashInfo && flashInfo.label && (
-            <p className={`text-sm font-semibold font-mono ${flashInfo.color} animate-pulse`}>
-              {flashInfo.emoji} {flashInfo.label}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Action button */}
-      <div className="flex flex-col items-center gap-3">
+      {/* Fixed bottom CTA */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-4 safe-area-bottom">
         {gameState === "idle" && (
           <button
             onClick={startGame}
-            className="px-12 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-base tracking-wide
-              hover:brightness-110 active:scale-95 transition-all duration-150
-              shadow-[0_4px_20px_rgba(212,168,71,0.4)]"
+            className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg tracking-wide
+              active:scale-[0.97] transition-transform shadow-[0_4px_20px_rgba(212,168,71,0.4)]"
           >
             Start Game
           </button>
@@ -294,8 +336,8 @@ export default function App() {
           <button
             onClick={handleRoll}
             disabled={isRolling}
-            className="px-12 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-base tracking-wide
-              hover:brightness-110 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed
+            className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg tracking-wide
+              active:scale-[0.97] transition-transform disabled:opacity-50
               shadow-[0_4px_20px_rgba(212,168,71,0.4)]"
           >
             {pendingBonusRoll ? "Claim Bonus Roll 🎰" : isRolling ? "Rolling…" : "Roll Dice"}
@@ -303,77 +345,15 @@ export default function App() {
         )}
 
         {gameState === "done" && (
-          <div className="flex flex-col items-center gap-3">
-            <div className="text-center px-6 py-4 rounded-2xl border border-border bg-card">
-              <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-1">Final Score</p>
-              <p className={`text-6xl font-bold tabular-nums ${score < 0 ? "text-red-400" : "text-primary"}`}>{score}</p>
-              <p className="text-sm text-muted-foreground mt-2 font-mono">
-                {score >= 100 ? "🏆 Tab champion!" :
-                 score >= 60  ? "🍻 Solid game!" :
-                 score >= 30  ? "😅 Not bad..." :
-                 score >= 0   ? "😬 Better luck next time" :
-                                "🍺 You're buying the whole bar!"}
-              </p>
-            </div>
-            <button
-              onClick={resetGame}
-              className="px-10 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-base
-                hover:brightness-110 active:scale-95 transition-all duration-150
-                shadow-[0_4px_20px_rgba(212,168,71,0.4)]"
-            >
-              Play Again
-            </button>
-          </div>
+          <button
+            onClick={resetGame}
+            className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg tracking-wide
+              active:scale-[0.97] transition-transform shadow-[0_4px_20px_rgba(212,168,71,0.4)]"
+          >
+            Play Again
+          </button>
         )}
       </div>
-
-      {/* Session Log */}
-      {log.length > 0 && (
-        <div className="w-full max-w-sm flex flex-col gap-2">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-              Roll History
-            </span>
-            <span className="text-xs font-mono text-muted-foreground">
-              Avg: {(log.reduce((s, e) => s + e.pointsEarned, 0) / log.length).toFixed(1)} pts/roll
-            </span>
-          </div>
-          <div
-            ref={logRef}
-            className="rounded-xl border border-border bg-card overflow-y-auto"
-            style={{ maxHeight: "200px", scrollbarWidth: "none" }}
-          >
-            <div className="divide-y divide-border">
-              {[...log].reverse().map((entry, i) => {
-                const info = COMBO_INFO[entry.combo];
-                return (
-                  <div
-                    key={entry.id}
-                    className="flex items-center justify-between px-4 py-2 text-xs font-mono"
-                    style={{ opacity: i === 0 ? 1 : Math.max(0.45, 1 - i * 0.07) }}
-                  >
-                    <div className="flex items-center gap-2">
-                      {entry.isBonusRoll && (
-                        <span className="text-primary text-[10px] border border-primary/40 rounded px-1 py-0.5">BONUS</span>
-                      )}
-                      <span className="text-foreground">
-                        [{entry.dice[0]}] [{entry.dice[1]}] = {entry.baseSum}
-                      </span>
-                      {info.emoji && <span>{info.emoji}</span>}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={entry.pointsEarned < 0 ? "text-red-400" : "text-primary"}>
-                        {entry.pointsEarned >= 0 ? "+" : ""}{entry.pointsEarned}
-                      </span>
-                      <span className="text-muted-foreground w-10 text-right">{entry.runningScore}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
